@@ -9,8 +9,6 @@ from preferences import PreferenceManager
 
 
 class ServiceFactory(ABC):
-    """Factory Method abstrato para serviços do sistema de viagens"""
-    
     @abstractmethod
     def create_booking_system(self):
         pass
@@ -31,9 +29,7 @@ class ServiceFactory(ABC):
     def create_preference_manager(self):
         pass
 
-class StandardServiceFactory(ServiceFactory):
-    """Implementação concreta da fábrica de serviços padrão"""
-    
+class ConcreteService(ServiceFactory):  
     def create_booking_system(self):
         return BookingSystem()
     
@@ -49,6 +45,5 @@ class StandardServiceFactory(ServiceFactory):
     def create_preference_manager(self):
         return PreferenceManager()
 
-# Função para obter a fábrica de serviços
 def get_service_factory():
-    return StandardServiceFactory()
+    return ConcreteService()
