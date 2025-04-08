@@ -10,8 +10,6 @@ class Itinerary(TravelPlan):
         super().__init__()
         self._activities = []
         self._user_id = user_id
-        
-        # Utilizando a fábrica para criar os componentes
         factory = get_service_factory()
         self._booking_system = factory.create_booking_system()
         self._collaborative_planner = factory.create_collaborative_planner()
