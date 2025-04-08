@@ -1,14 +1,20 @@
-from itinerario import Itinerary
-from destinos import DestinationInfo
-from despesas import ExpenseManager
-from utils import get_user_input, show_menu, show_booking_menu, show_preferences_menu
+from itinerary import Itinerary
+from factories import get_service_factory
+from helpers import get_user_input, show_menu, show_booking_menu, show_preferences_menu
+
+
+
 
 def main():
-    user_id = "user_001"  # Poderia ser obtido de um sistema de login
+    user_id = "user_001" 
+    factory = get_service_factory()
+    
+    # Cria os componentes usando a fábrica
     itinerary = Itinerary(user_id)
-    destination_info = DestinationInfo()
-    expense_manager = ExpenseManager()
-
+    destination_info = factory.create_destination_info()
+    expense_manager = factory.create_expense_manager()
+    preference_manager = factory.create_preference_manager()
+    
     while True:
         show_menu()
         choice = get_user_input("Escolha uma opção: ")
