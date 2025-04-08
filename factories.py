@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from reserva.booking import BookingSystem
-from colaboracao.collaboration import CollaborativePlanner
-from destino.destiny import DestinationInfo
-from despesa.expenses import ExpenseManager
-from preferencia.preferences import PreferenceManager
+from booking import BookingSystem
+from collaboration import CollaborativePlanner
+from destiny import DestinationInfo
+from expenses import ExpenseManager
+from preferences import PreferenceManager
 
 
 
