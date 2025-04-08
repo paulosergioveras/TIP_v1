@@ -1,4 +1,4 @@
-from travelplan import TravelPlan
+from itinerario.travelplan import TravelPlan
 
 class ExpenseManager(TravelPlan):
     def __init__(self):
