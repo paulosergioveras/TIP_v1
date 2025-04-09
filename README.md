@@ -27,7 +27,7 @@
     Why? These features were not implemented due to their complexity.
 
 
-## Design Pattern Used: Factory Method (Creational Pattern)
+## 🧠 Design Pattern Used: Factory Method (Creational Pattern)
 
     Problem Identified
     The system initially created instances of classes like BookingSystem, CollaborativePlanner, and other components directly. This led to:
