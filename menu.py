@@ -1,19 +1,56 @@
 from itinerary import Itinerary
 from factories import get_service_factory
 from helpers import get_user_input, show_menu, show_booking_menu, show_preferences_menu
-
-
-
+from decorator import TimeConflictValidator, BudgetTrackingDecorator
+from observer import ActivityObserver, CollaboratorObserver, ExpenseObserver
+from itinerary import ObservableItinerary
 
 def main():
     user_id = "user_001" 
     factory = get_service_factory()
     
     # Cria os componentes usando a fábrica
-    itinerary = Itinerary(user_id)
     destination_info = factory.create_destination_info()
     expense_manager = factory.create_expense_manager()
     preference_manager = factory.create_preference_manager()
+    
+    # Cria o itinerário base
+    base_itinerary = Itinerary(user_id)
+    
+    # Pergunta se deseja usar recursos avançados
+    print("\nDeseja habilitar recursos avançados?")
+    print("1 - Validação de conflitos de horário")
+    print("2 - Rastreamento de orçamento")
+    print("3 - Ambos")
+    print("4 - Nenhum (itinerário básico)")
+    advanced_choice = get_user_input("Escolha uma opção: ")
+    
+    # Aplica os decoradores conforme a escolha
+    if advanced_choice == "1":
+        itinerary = TimeConflictValidator(base_itinerary)
+        print("Validação de conflitos de horário ativada!")
+    elif advanced_choice == "2":
+        budget = float(get_user_input("Digite seu orçamento total para a viagem (R$): "))
+        itinerary = BudgetTrackingDecorator(base_itinerary, budget)
+        print(f"Rastreamento de orçamento ativado! Orçamento total: R$ {budget:.2f}")
+    elif advanced_choice == "3":
+        budget = float(get_user_input("Digite seu orçamento total para a viagem (R$): "))
+        itinerary = TimeConflictValidator(BudgetTrackingDecorator(base_itinerary, budget))
+        print("Validação de conflitos e rastreamento de orçamento ativados!")
+    else:
+        itinerary = base_itinerary
+        print("Usando itinerário básico.")
+    
+    # Criação do itinerário observável para demonstrar o padrão Observer
+    observable_itinerary = ObservableItinerary(user_id)
+    
+    # Adiciona observadores
+    activity_observer = ActivityObserver()
+    observable_itinerary.attach(activity_observer)
+    
+    # Adiciona observador de despesas
+    expense_observer = ExpenseObserver(expense_manager)
+    observable_itinerary.attach(expense_observer)
     
     while True:
         show_menu()
@@ -21,12 +58,29 @@ def main():
 
         if choice == "1":
             name = get_user_input("Nome da atividade: ")
-            itinerary.add_activity(name)
+            
+            # Se estiver usando o decorador de validação de horário ou orçamento
+            if advanced_choice in ["1", "3"]:
+                start_time = get_user_input("Horário de início (HH:MM): ")
+                end_time = get_user_input("Horário de término (HH:MM): ")
+                itinerary.add_activity(name, start_time, end_time)
+            elif advanced_choice == "2":
+                cost = float(get_user_input("Custo estimado da atividade (R$): "))
+                itinerary.add_activity(name, cost)
+            else:
+                itinerary.add_activity(name)
+            
+            # Demonstra a notificação através do padrão Observer
+            observable_itinerary.add_activity(name)
         
         elif choice == "2":
             itinerary.exibir_info()  
             index = int(get_user_input("Digite o número da atividade a ser removida: ")) - 1
-            itinerary.remove_activity(index)
+            removed = itinerary.remove_activity(index)
+            
+            # Notifica os observadores sobre a remoção
+            if removed:
+                observable_itinerary.remove_activity(index)
         
         elif choice == "3":
             itinerary.exibir_info()
@@ -41,6 +95,20 @@ def main():
             categoria = get_user_input("Categoria da despesa: ")
             valor = float(get_user_input("Valor gasto (R$): "))
             expense_manager.add_expense(categoria, valor)
+            
+            # Pergunta se deseja vincular a despesa a uma atividade
+            vincular = get_user_input("Vincular esta despesa a uma atividade? (s/n): ").lower()
+            if vincular == 's':
+                itinerary.exibir_info()
+                if hasattr(itinerary, '_activities') and itinerary._activities:
+                    activity_index = int(get_user_input("Número da atividade: ")) - 1
+                    if 0 <= activity_index < len(itinerary._activities):
+                        activity_name = itinerary._activities[activity_index]['nome']
+                        # Notifica os observadores sobre a nova despesa associada à atividade
+                        observable_itinerary.set_state('expense_added', valor)
+                        observable_itinerary.set_state('expense_activity', activity_name)
+                else:
+                    print("Não há atividades para vincular.")
         
         elif choice == "6":
             expense_manager.show_expenses()
@@ -78,6 +146,11 @@ def main():
             friends = get_user_input("Digite os emails dos amigos para compartilhar (separados por vírgula): ").split(',')
             friends = [email.strip() for email in friends]
             itinerary.share_with_friends(friends)
+            
+            # Demonstração do padrão Observer para notificações
+            collaborator_observer = CollaboratorObserver(friends)
+            observable_itinerary.attach(collaborator_observer)
+            print("Observador de colaboradores adicionado. Colaboradores serão notificados sobre mudanças.")
         
         elif choice == "9":
             destination = get_user_input("Destino para avaliar: ")
@@ -93,17 +166,19 @@ def main():
                 
                 if pref_choice == "1":
                     price = get_user_input("Preferência de preço (Baixo, Médio, Alto): ")
+                    preference_manager.set_user_preferences(user_id, {"price": price})
                     destination_info.set_user_preferences(user_id, {"price": price})
                     print("Preferência de preço definida!")
                 
                 elif pref_choice == "2":
                     continent = get_user_input("Continente preferido (Europa, Ásia, América do Sul, América do Norte, África, Oceania): ")
+                    preference_manager.set_user_preferences(user_id, {"continent": continent})
                     destination_info.set_user_preferences(user_id, {"continent": continent})
                     print("Preferência de continente definida!")
                 
                 elif pref_choice == "3":
                     activity = get_user_input("Tipo de atividade preferida (Aventura, Cultural, Relaxamento, Gastronomia): ")
-                    destination_info.set_user_preferences(user_id, {"activity_type": activity})
+                    preference_manager.set_user_preferences(user_id, {"activity_type": activity})
                     print("Preferência de atividade definida!")
                 
                 elif pref_choice == "4":
