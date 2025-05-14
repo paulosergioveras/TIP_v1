@@ -8,16 +8,11 @@ from itinerary import ObservableItinerary
 def main():
     user_id = "user_001" 
     factory = get_service_factory()
-    
-    # Cria os componentes usando a fábrica
     destination_info = factory.create_destination_info()
     expense_manager = factory.create_expense_manager()
     preference_manager = factory.create_preference_manager()
-    
-    # Cria o itinerário base
     base_itinerary = Itinerary(user_id)
     
-    # Pergunta se deseja usar recursos avançados
     print("\nDeseja habilitar recursos avançados?")
     print("1 - Validação de conflitos de horário")
     print("2 - Rastreamento de orçamento")
@@ -70,7 +65,6 @@ def main():
             else:
                 itinerary.add_activity(name)
             
-            # Demonstra a notificação através do padrão Observer
             observable_itinerary.add_activity(name)
         
         elif choice == "2":

@@ -89,9 +89,7 @@ class Itinerary(TravelPlan):
     def get_shared_itineraries(self):
         return self._collaborative_planner.get_shared_itineraries(self._user_id)
 
-class ObservableItinerary(Itinerary, ItinerarySubject):
-    '''Itinerário observável que notifica observadores sobre mudanças'''
-    
+class ObservableItinerary(Itinerary, ItinerarySubject):    
     def __init__(self, user_id):
         Itinerary.__init__(self, user_id)
         ItinerarySubject.__init__(self)
