@@ -129,3 +129,10 @@
 
         Component Reusability: Observers can be reused in different contexts
 
+# How to run the project
+    Step 1. Clone the repository:
+        git clone https://github.com/paulosergioveras/TIP_v1.git
+        cd tip
+    
+    Step 2. Run the main program:
+        python menu.py
